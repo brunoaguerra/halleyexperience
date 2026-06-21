@@ -1,0 +1,393 @@
+/* =========================================================
+   HALLEY — Landing page styles
+   ========================================================= */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------------------------------------------------
+   NAVBAR
+   --------------------------------------------------------- */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: center;       /* logo centered horizontally */
+  padding: 18px clamp(16px, 4vw, 34px);
+  padding-top: calc(22px + env(safe-area-inset-top));
+  /* black at 20% opacity */
+  background: rgba(0,0,0,0.20);
+  border-bottom: 1px solid rgba(255,255,255,0);
+  transition: background 0.4s ease, border-color 0.4s ease,
+              -webkit-backdrop-filter 0.4s ease, backdrop-filter 0.4s ease;
+}
+/* liquid glass on hover */
+.navbar:hover {
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,0.10) 0%,
+      rgba(255,255,255,0.03) 100%),
+    rgba(0,0,0,0.20);
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.navbar__logo {
+  /* logo size — edit to taste */
+  height: clamp(40px, 8vw, 58px);
+  width: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: auto;
+  /* fade in with the scene */
+  opacity: 0;
+  animation: fadeIn 2.6s ease 0.4s forwards;
+}
+
+/* ---------------------------------------------------------
+   STAGE + HERO IMAGE
+   --------------------------------------------------------- */
+
+/* Full-screen cinematic stage */
+.stage {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* The frame keeps the image's exact aspect ratio and is
+   scaled to COVER the viewport (full-bleed, no black bars).
+   The overflow is clipped by .stage. */
+.frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 3080 / 1883;                       /* hero native ratio */
+  width: max(100vw, calc(100vh * 3080 / 1883));    /* cover: fill width or height */
+  height: auto;
+  /* slow breathing fade-in */
+  animation: fadeIn 2.6s ease forwards;
+}
+/* Use the LARGEST viewport height on mobile so the image keeps
+   covering the screen when the browser's address bar hides. */
+@supports (width: 100lvh) {
+  .frame { width: max(100vw, calc(100lvh * 3080 / 1883)); }
+}
+
+.hero {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;        /* whole image visible, no crop */
+  object-position: center;
+  user-select: none;
+  -webkit-user-drag: none;
+  /* subtle cinematic grade */
+  filter: contrast(1.05) brightness(0.96) saturate(0.95);
+}
+
+/* Spotlight canvas over the colour image: reveals a grayscale,
+   glitching circle around the cursor. */
+.bw-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;   /* never blocks clicks/hover targets */
+  z-index: 2;
+}
+
+/* gentle vignette for mystery */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    rgba(0,0,0,0) 45%,
+    rgba(0,0,0,0.55) 100%
+  );
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---------------------------------------------------------
+   CENTERED CALL-TO-ACTION BUTTON (liquid glass)
+   --------------------------------------------------------- */
+.cta {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: inline-block;
+  padding: 16px 34px;
+  font-size: clamp(13px, 2.8vw, 17px);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 300;
+  text-decoration: none;
+  white-space: nowrap;
+  color: rgba(255,255,255,0.96);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  /* --- Liquid glass --- */
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,0.18) 0%,
+      rgba(255,255,255,0.05) 40%,
+      rgba(255,255,255,0.02) 60%,
+      rgba(255,255,255,0.10) 100%);
+  border: 1px solid rgba(255,255,255,0.30);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  text-shadow: 0 1px 10px rgba(0,0,0,0.45);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.35),                  /* outer drop */
+    inset 0 1px 1px rgba(255,255,255,0.55),       /* top glass highlight */
+    inset 0 -1px 1px rgba(255,255,255,0.12);      /* bottom edge */
+
+  transition: background 0.4s ease, border-color 0.4s ease,
+              box-shadow 0.4s ease, letter-spacing 0.4s ease,
+              color 0.4s ease, text-shadow 0.4s ease;
+  /* fade in with the scene */
+  opacity: 0;
+  animation: ctaIn 2.6s ease 0.8s forwards;
+}
+/* moving liquid sheen across the glass */
+.cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg,
+    transparent 30%,
+    rgba(255,255,255,0.22) 48%,
+    transparent 66%);
+  background-size: 250% 100%;
+  background-position: 120% 0;
+  pointer-events: none;
+  transition: background-position 0.9s ease;
+}
+@keyframes ctaIn {
+  from { opacity: 0; transform: translate(-50%, -42%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+.cta:hover {
+  /* invert to dark glass — text contrasts brightly against it */
+  background:
+    linear-gradient(135deg,
+      rgba(0,0,0,0.78) 0%,
+      rgba(0,0,0,0.62) 50%,
+      rgba(0,0,0,0.80) 100%);
+  color: #ffffff;
+  border-color: rgba(255,255,255,0.85);
+  letter-spacing: 0.4em;
+  text-shadow: 0 0 16px rgba(255,255,255,0.55);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.55),
+    0 0 30px rgba(255,255,255,0.20),
+    inset 0 1px 1px rgba(255,255,255,0.35),
+    inset 0 -1px 1px rgba(255,255,255,0.10);
+}
+.cta:hover::before { background-position: -120% 0; }
+
+/* ---------------------------------------------------------
+   MINIMAL AUDIO PLAYER (sits just above the footer)
+   --------------------------------------------------------- */
+.player {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: calc(64px + max(18px, env(safe-area-inset-bottom)));
+  z-index: 30;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.22);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: rgba(255,255,255,0.9);
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.6s ease;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0;                       /* fades in with the scene */
+  animation: fadeIn 2.6s ease 0.6s forwards;
+}
+.player:hover {
+  background: rgba(0,0,0,0.55);
+  border-color: rgba(255,255,255,0.4);
+  transform: scale(1.06);
+}
+.player svg { width: 16px; height: 16px; display: block; }
+/* show play OR pause icon based on state */
+.player .icon-pause { display: none; }
+.player.playing .icon-play  { display: none; }
+.player.playing .icon-pause { display: block; }
+
+/* gentle pulsing ring while music plays */
+.player.playing::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.35);
+  animation: ring 2.4s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes ring {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* ---------------------------------------------------------
+   FOOTER
+   --------------------------------------------------------- */
+.footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px clamp(16px, 4vw, 34px);
+  padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  background: #000;
+  border-top: 1px solid rgba(255,255,255,0.10);
+}
+.footer__brand {
+  font-size: clamp(11px, 2.4vw, 14px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 300;
+  color: rgba(255,255,255,0.8);
+  white-space: nowrap;
+}
+.footer__social {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 3vw, 22px);
+}
+.footer__social a {
+  display: flex;
+  color: rgba(255,255,255,0.75);
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+.footer__social a:hover {
+  color: #fff;
+  transform: translateY(-2px);
+}
+.footer__social svg { width: 21px; height: 21px; display: block; }
+
+/* ---------------------------------------------------------
+   FILM GRAIN OVERLAY (full screen, above everything)
+   --------------------------------------------------------- */
+.grain {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.45;                 /* subtle */
+  mix-blend-mode: overlay;       /* filmic: adds texture, not a gray wash */
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+@media (max-width: 600px) {
+  .navbar {
+    padding: 14px 16px;
+    padding-top: calc(16px + env(safe-area-inset-top));
+  }
+  /* keep the glass effect available on tap-less screens too */
+  .navbar:active { backdrop-filter: blur(14px) saturate(160%);
+                   -webkit-backdrop-filter: blur(14px) saturate(160%); }
+
+  .cta {
+    padding: 14px 24px;
+    letter-spacing: 0.24em;
+    max-width: 88vw;
+    text-align: center;
+    white-space: normal;       /* allow wrap on very narrow phones */
+  }
+  .cta:hover { letter-spacing: 0.3em; }
+
+  .footer {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .footer__brand {
+    letter-spacing: 0.14em;
+    font-size: 11px;
+  }
+  .footer__social { gap: 18px; }
+  .footer__social svg { width: 22px; height: 22px; }  /* comfy tap target */
+
+  /* lift the audio button clear of the footer */
+  .player {
+    width: 42px;
+    height: 42px;
+    bottom: calc(58px + max(14px, env(safe-area-inset-bottom)));
+    right: max(14px, env(safe-area-inset-right));
+  }
+}
+
+/* On touch screens (no hover), give the footer icons a clear
+   pressed state since :hover never fires. */
+@media (hover: none) {
+  .footer__social a:active { color: #fff; transform: translateY(-2px); }
+  .cta:active {
+    background:
+      linear-gradient(135deg,
+        rgba(0,0,0,0.78) 0%,
+        rgba(0,0,0,0.62) 50%,
+        rgba(0,0,0,0.80) 100%);
+    color: #fff;
+    border-color: rgba(255,255,255,0.85);
+  }
+}
+
+/* ---------------------------------------------------------
+   ACCESSIBILITY
+   --------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .frame, .cta, .player { animation: none; transition: none; }
+  .cta, .player { opacity: 1; }
+  .player.playing::after { animation: none; }
+}
