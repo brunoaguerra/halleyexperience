@@ -1,20 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Halley Experience</title>
+  <meta name="description" content="Halley Experience — una experiencia inmersiva. One Small Step…" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="assets/images/ico.png" />
   <link rel="apple-touch-icon" href="assets/images/ico.png" />
 
+  <!-- Preload critical assets -->
+  <link rel="preload" as="image" href="assets/images/img3.jpg" />
+
   <!-- Social / Instagram bio preview -->
+  <!-- TODO: reemplazar TUDOMINIO.com por el dominio real de hosting -->
   <meta property="og:title" content="Halley Experience" />
   <meta property="og:description" content="One Small Step…" />
-  <meta property="og:image" content="assets/images/img3.jpg" />
+  <meta property="og:image" content="https://TUDOMINIO.com/assets/images/img3.jpg" />
+  <meta property="og:url" content="https://TUDOMINIO.com/" />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#000000" />
+
+  <!-- Twitter / X card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Halley Experience" />
+  <meta name="twitter:description" content="One Small Step…" />
+  <meta name="twitter:image" content="https://TUDOMINIO.com/assets/images/img3.jpg" />
 
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -25,6 +37,7 @@
   </nav>
 
   <main class="stage" aria-label="HALLEY">
+    <h1 class="sr-only">Halley Experience</h1>
     <div class="frame">
       <img class="hero" src="assets/images/img3.jpg" alt="" draggable="false" />
       <!-- B&W + glitch spotlight that follows the cursor (drawn in JS) -->
@@ -41,9 +54,9 @@
     >One Small Step…</a>
   </main>
 
-  <!-- Looping soundtrack: autoplays muted (allowed everywhere),
-       then un-mutes on the first user gesture. -->
-  <audio id="track" src="assets/audio/One Small Step, One Giant Leap.mp3" loop autoplay muted playsinline preload="auto"></audio>
+  <!-- Looping soundtrack: starts with preload="metadata" (lazy),
+       full audio loads on first user gesture. -->
+  <audio id="track" src="assets/audio/one-small-step.mp3" loop autoplay muted preload="metadata"></audio>
 
   <!-- Footer -->
   <footer class="footer">

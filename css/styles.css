@@ -4,10 +4,25 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 html, body {
   height: 100%;
   background: #000;
   overflow: hidden;
+  /* Page Visibility API sets this to 'paused' when tab is hidden */
+  --page-play-state: running;
 }
 
 body {
@@ -87,6 +102,8 @@ body {
   aspect-ratio: 3080 / 1883;                       /* hero native ratio */
   width: max(100vw, calc(100vh * 3080 / 1883));    /* cover: fill width or height */
   height: auto;
+  /* loading placeholder while hero image downloads */
+  background: radial-gradient(ellipse at 50% 45%, #111 0%, #000 100%);
   /* slow breathing fade-in */
   animation: fadeIn 2.6s ease forwards;
 }
@@ -107,6 +124,13 @@ body {
   -webkit-user-drag: none;
   /* subtle cinematic grade */
   filter: contrast(1.05) brightness(0.96) saturate(0.95);
+  /* Ken Burns — very slow breathing zoom for cinematic life */
+  animation: kenBurns 30s ease-in-out infinite alternate;
+  animation-play-state: var(--page-play-state);
+}
+@keyframes kenBurns {
+  0%   { transform: scale(1.00); }
+  100% { transform: scale(1.05); }
 }
 
 /* Spotlight canvas over the colour image: reveals a grayscale,
@@ -160,12 +184,8 @@ body {
 
   /* --- Liquid glass --- */
   border-radius: 12px;
-  background:
-    linear-gradient(135deg,
-      rgba(255,255,255,0.18) 0%,
-      rgba(255,255,255,0.05) 40%,
-      rgba(255,255,255,0.02) 60%,
-      rgba(255,255,255,0.10) 100%);
+  /* Solid fallback for browsers without backdrop-filter */
+  background: rgba(0,0,0,0.50);
   border: 1px solid rgba(255,255,255,0.30);
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
@@ -201,8 +221,32 @@ body {
   from { opacity: 0; transform: translate(-50%, -42%); }
   to   { opacity: 1; transform: translate(-50%, -50%); }
 }
+/* subtle breathing glow that draws the eye to the CTA */
+@keyframes ctaBreath {
+  0%, 100% {
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.35),
+      inset 0 1px 1px rgba(255,255,255,0.55),
+      inset 0 -1px 1px rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.30);
+  }
+  50% {
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.35),
+      0 0 18px rgba(255,255,255,0.12),
+      inset 0 1px 1px rgba(255,255,255,0.55),
+      inset 0 -1px 1px rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.50);
+  }
+}
+/* start breathing after the entrance animation finishes (0.8s delay + 2.6s duration ≈ 3.4s) */
+.cta {
+  animation: ctaIn 2.6s ease 0.8s forwards, ctaBreath 4s ease-in-out 3.6s infinite;
+}
 .cta:hover {
   /* invert to dark glass — text contrasts brightly against it */
+  /* pause breathing while hovered */
+  animation-play-state: running, paused;
   background:
     linear-gradient(135deg,
       rgba(0,0,0,0.78) 0%,
@@ -325,6 +369,7 @@ body {
   pointer-events: none;
   opacity: 0.45;                 /* subtle */
   mix-blend-mode: overlay;       /* filmic: adds texture, not a gray wash */
+  will-change: contents;         /* hint compositor: repaints often */
 }
 
 /* ---------------------------------------------------------
@@ -388,6 +433,20 @@ body {
    --------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   .frame, .cta, .player { animation: none; transition: none; }
+  .hero { animation: none; }
   .cta, .player { opacity: 1; }
   .player.playing::after { animation: none; }
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .cta {
+    background:
+      linear-gradient(135deg,
+        rgba(255,255,255,0.18) 0%,
+        rgba(255,255,255,0.05) 40%,
+        rgba(255,255,255,0.02) 60%,
+        rgba(255,255,255,0.10) 100%);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+  }
 }

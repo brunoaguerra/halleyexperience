@@ -11,9 +11,13 @@
   const hero = document.querySelector('.hero');
   if (!bw || !hero) return;
 
-  const ctx = bw.getContext('2d');
-
   const MOBILE = window.matchMedia('(max-width: 768px), (hover: none)').matches;
+
+  // On pure touch devices (no hover capability) the spotlight has no purpose —
+  // skip the entire RAF loop to save CPU/battery.
+  if (MOBILE) return;
+
+  const ctx = bw.getContext('2d');
 
   let gray = null;          // pre-rendered grayscale image
   let iw = 0, ih = 0;       // natural image size
@@ -33,6 +37,8 @@
   let lastGlitch = 0;
   let gAb = 0, gAbY = 0, gSlices = [], gBars = [];
 
+  let resizeTimer = 0;
+
   function buildGray() {
     iw = hero.naturalWidth;
     ih = hero.naturalHeight;
@@ -49,11 +55,17 @@
     const rect = bw.getBoundingClientRect();
     cw = rect.width;
     ch = rect.height;
-    const dpr = Math.min(window.devicePixelRatio || 1, MOBILE ? 1.5 : 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     bw.width  = Math.round(cw * dpr);
     bw.height = Math.round(ch * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);  // work in CSS pixels
     bigR = Math.min(cw, ch) * 0.22;          // spotlight radius
+  }
+
+  // Debounced resize to avoid excessive recalcs.
+  function onResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resize, 150);
   }
 
   // Map the image onto the canvas like the <img> (cover, centered).
@@ -130,7 +142,7 @@
 
   function frame(t) {
     requestAnimationFrame(frame);
-    if (!gray) return;
+    if (!gray || document.hidden) return;
 
     curX += (targetX - curX) * EASE_POS;
     curY += (targetY - curY) * EASE_POS;
@@ -156,12 +168,11 @@
   window.addEventListener('pointerdown', pointTo, { passive: true });
   window.addEventListener('pointerleave', () => { inside = false; });
   document.addEventListener('mouseleave', () => { inside = false; });
-  // Touch has no "leave": close the circle when the finger lifts.
   window.addEventListener('pointerup', (e) => {
     if (e.pointerType === 'touch') inside = false;
   });
   window.addEventListener('pointercancel', () => { inside = false; });
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', onResize);
 
   function start() {
     buildGray();
