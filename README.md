@@ -4,10 +4,12 @@ Landing page cinematográfica de una sola página para la campaña **HALLEY**.
 Imagen del alunizaje (NASA) a pantalla completa, botón central *liquid glass*,
 banda sonora en loop y footer con redes. Optimizada para tráfico de bio de Instagram.
 
+**Dominio:** [halleyexperience.com.ar](https://halleyexperience.com.ar)
+
 ## Estructura del proyecto
 
 ```
-HalleyWeb/
+halleyexperience/
 ├── index.html              # Marcado de la página
 ├── css/
 │   └── styles.css          # Todos los estilos
@@ -18,9 +20,10 @@ HalleyWeb/
 ├── assets/
 │   ├── images/
 │   │   ├── img3.jpg        # Imagen de fondo (hero)
+│   │   ├── ico.png         # Favicon
 │   │   └── HALLEYlogo.png  # Logo del navbar
 │   └── audio/
-│       └── One Small Step, One Giant Leap.mp3   # Banda sonora
+│       └── one-small-step.mp3   # Banda sonora
 └── README.md
 ```
 
@@ -49,13 +52,11 @@ Luego abrir: http://localhost:8000
 | Círculo B&N / glitch / grano     | `js/spotlight.js` y `js/grain.js` (variables al inicio de cada archivo) |
 | Colores / estilos                | `css/styles.css`                                                      |
 
-## Pendiente de completar (links de redes)
+## Redes sociales (configuradas)
 
-En el footer de `index.html`, reemplazar:
-
-- **TikTok** → `https://www.tiktok.com/@halley.experience` (confirmar el handle real)
-- **WhatsApp** → `https://wa.me/0000000000` (poner el número con código de país, sin `+`,
-  ej. `https://wa.me/5491122334455`)
+- **Instagram** → [@halley.experience](https://www.instagram.com/halley.experience)
+- **TikTok** → [@halley.experience](https://www.tiktok.com/@halley.experience)
+- **WhatsApp** → [+54 9 11 3076-5860](https://wa.me/5491130765860)
 
 > Nota: la **imagen** de fondo y la **aspect-ratio** en `styles.css` están calibradas
 > para `img3.jpg` (3080×1883). Si cambiás la imagen, actualizá ambos valores.

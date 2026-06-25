@@ -68,9 +68,9 @@
     resizeTimer = setTimeout(resize, 150);
   }
 
-  // Map the image onto the canvas like the <img> (cover, centered).
+  // Map the image onto the canvas like the <img> (contain, centered).
   function coverRect() {
-    const scale = Math.max(cw / iw, ch / ih);
+    const scale = Math.min(cw / iw, ch / ih);
     const dw = iw * scale, dh = ih * scale;
     return { dx: (cw - dw) / 2, dy: (ch - dh) / 2, dw, dh };
   }

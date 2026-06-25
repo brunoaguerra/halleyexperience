@@ -23,12 +23,39 @@ html, body {
   overflow: hidden;
   /* Page Visibility API sets this to 'paused' when tab is hidden */
   --page-play-state: running;
+  /* Prevent accidental double-tap zoom on interactive elements (iOS/Android) */
+  touch-action: manipulation;
+  /* Prevent pull-to-refresh on Android Chrome */
+  overscroll-behavior: none;
 }
 
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #fff;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom cursor — subtle crosshair (desktop only) */
+@media (hover: hover) {
+  body { cursor: crosshair; }
+  a, button { cursor: pointer; }
+}
+
+/* ---------------------------------------------------------
+   CINEMATIC INTRO CURTAIN
+   --------------------------------------------------------- */
+.intro-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  pointer-events: none;
+  animation: curtainOpen 2.2s cubic-bezier(0.65, 0, 0.35, 1) 0.3s forwards;
+}
+@keyframes curtainOpen {
+  0%   { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
 }
 
 /* ---------------------------------------------------------
@@ -42,14 +69,17 @@ body {
   z-index: 25;
   display: flex;
   align-items: center;
-  justify-content: center;       /* logo centered horizontally */
+  justify-content: center;
   padding: 18px clamp(16px, 4vw, 34px);
   padding-top: calc(22px + env(safe-area-inset-top));
-  /* black at 20% opacity */
-  background: rgba(0,0,0,0.20);
-  border-bottom: 1px solid rgba(255,255,255,0);
+  /* subtle always-on glass base */
+  background: rgba(0,0,0,0.30);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   transition: background 0.4s ease, border-color 0.4s ease,
-              -webkit-backdrop-filter 0.4s ease, backdrop-filter 0.4s ease;
+              -webkit-backdrop-filter 0.4s ease, backdrop-filter 0.4s ease,
+              box-shadow 0.4s ease;
 }
 /* liquid glass on hover */
 .navbar:hover {
@@ -64,16 +94,23 @@ body {
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
 }
 .navbar__logo {
-  /* logo size — edit to taste */
   height: clamp(40px, 8vw, 58px);
   width: auto;
   display: block;
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: auto;
-  /* fade in with the scene */
+  /* staggered entrance: logo appears first */
   opacity: 0;
-  animation: fadeIn 2.6s ease 0.4s forwards;
+  animation: logoIn 2.8s ease 0.6s forwards;
+  transition: filter 0.5s ease;
+}
+.navbar__logo:hover {
+  filter: drop-shadow(0 0 12px rgba(255,255,255,0.35));
+}
+@keyframes logoIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ---------------------------------------------------------
@@ -91,24 +128,17 @@ body {
   overflow: hidden;
 }
 
-/* The frame keeps the image's exact aspect ratio and is
-   scaled to COVER the viewport (full-bleed, no black bars).
-   The overflow is clipped by .stage. */
 .frame {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  aspect-ratio: 3080 / 1883;                       /* hero native ratio */
-  width: max(100vw, calc(100vh * 3080 / 1883));    /* cover: fill width or height */
+  aspect-ratio: 3080 / 1883;
+  width: max(100vw, calc(100vh * 3080 / 1883));
   height: auto;
-  /* loading placeholder while hero image downloads */
   background: radial-gradient(ellipse at 50% 45%, #111 0%, #000 100%);
-  /* slow breathing fade-in */
   animation: fadeIn 2.6s ease forwards;
 }
-/* Use the LARGEST viewport height on mobile so the image keeps
-   covering the screen when the browser's address bar hides. */
 @supports (width: 100lvh) {
   .frame { width: max(100vw, calc(100lvh * 3080 / 1883)); }
 }
@@ -118,13 +148,11 @@ body {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;        /* whole image visible, no crop */
+  object-fit: contain;
   object-position: center;
   user-select: none;
   -webkit-user-drag: none;
-  /* subtle cinematic grade */
   filter: contrast(1.05) brightness(0.96) saturate(0.95);
-  /* Ken Burns — very slow breathing zoom for cinematic life */
   animation: kenBurns 30s ease-in-out infinite alternate;
   animation-play-state: var(--page-play-state);
 }
@@ -133,27 +161,27 @@ body {
   100% { transform: scale(1.05); }
 }
 
-/* Spotlight canvas over the colour image: reveals a grayscale,
-   glitching circle around the cursor. */
 .bw-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;   /* never blocks clicks/hover targets */
+  pointer-events: none;
   z-index: 2;
 }
 
-/* gentle vignette for mystery */
+/* dramatic vignette with cold space tint at the edges */
 .vignette {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse at 50% 45%,
-    rgba(0,0,0,0) 45%,
-    rgba(0,0,0,0.55) 100%
-  );
+  background:
+    radial-gradient(
+      ellipse at 50% 45%,
+      rgba(0,0,0,0) 40%,
+      rgba(8,12,28,0.35) 70%,
+      rgba(0,0,0,0.65) 100%
+    );
 }
 
 @keyframes fadeIn {
@@ -171,11 +199,12 @@ body {
   transform: translate(-50%, -50%);
   z-index: 10;
   display: inline-block;
-  padding: 16px 34px;
+  padding: 18px 38px;
+  font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(13px, 2.8vw, 17px);
-  letter-spacing: 0.32em;
+  letter-spacing: 0.35em;
   text-transform: uppercase;
-  font-weight: 300;
+  font-weight: 400;
   text-decoration: none;
   white-space: nowrap;
   color: rgba(255,255,255,0.96);
@@ -183,45 +212,65 @@ body {
   -webkit-tap-highlight-color: transparent;
 
   /* --- Liquid glass --- */
-  border-radius: 12px;
-  /* Solid fallback for browsers without backdrop-filter */
+  border-radius: 14px;
   background: rgba(0,0,0,0.50);
   border: 1px solid rgba(255,255,255,0.30);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  text-shadow: 0 1px 10px rgba(0,0,0,0.45);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  text-shadow: 0 1px 12px rgba(0,0,0,0.50);
   box-shadow:
-    0 8px 32px rgba(0,0,0,0.35),                  /* outer drop */
-    inset 0 1px 1px rgba(255,255,255,0.55),       /* top glass highlight */
-    inset 0 -1px 1px rgba(255,255,255,0.12);      /* bottom edge */
+    0 8px 32px rgba(0,0,0,0.40),
+    0 0 0 0.5px rgba(255,255,255,0.08),
+    inset 0 1px 1px rgba(255,255,255,0.55),
+    inset 0 -1px 1px rgba(255,255,255,0.12);
 
   transition: background 0.4s ease, border-color 0.4s ease,
               box-shadow 0.4s ease, letter-spacing 0.4s ease,
-              color 0.4s ease, text-shadow 0.4s ease;
-  /* fade in with the scene */
+              color 0.4s ease, text-shadow 0.4s ease,
+              transform 0.4s ease;
+  /* staggered entrance (appears after logo) */
   opacity: 0;
-  animation: ctaIn 2.6s ease 0.8s forwards;
+  animation: ctaIn 2.6s ease 1.2s forwards, ctaBreath 4s ease-in-out 4s infinite;
 }
-/* moving liquid sheen across the glass */
+/* auto-playing shimmer that sweeps periodically */
 .cta::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   background: linear-gradient(115deg,
-    transparent 30%,
-    rgba(255,255,255,0.22) 48%,
-    transparent 66%);
-  background-size: 250% 100%;
-  background-position: 120% 0;
+    transparent 20%,
+    rgba(255,255,255,0.15) 45%,
+    rgba(255,255,255,0.25) 50%,
+    rgba(255,255,255,0.15) 55%,
+    transparent 80%);
+  background-size: 300% 100%;
   pointer-events: none;
-  transition: background-position 0.9s ease;
+  animation: ctaShimmer 5s ease-in-out 4.5s infinite;
+}
+@keyframes ctaShimmer {
+  0%, 100% { background-position: 150% 0; }
+  50%      { background-position: -150% 0; }
+}
+/* subtle inner glow line at the top of the glass */
+.cta::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  border-radius: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,0.4),
+    transparent);
+  pointer-events: none;
 }
 @keyframes ctaIn {
   from { opacity: 0; transform: translate(-50%, -42%); }
   to   { opacity: 1; transform: translate(-50%, -50%); }
 }
-/* subtle breathing glow that draws the eye to the CTA */
 @keyframes ctaBreath {
   0%, 100% {
     box-shadow:
@@ -239,13 +288,7 @@ body {
     border-color: rgba(255,255,255,0.50);
   }
 }
-/* start breathing after the entrance animation finishes (0.8s delay + 2.6s duration ≈ 3.4s) */
-.cta {
-  animation: ctaIn 2.6s ease 0.8s forwards, ctaBreath 4s ease-in-out 3.6s infinite;
-}
 .cta:hover {
-  /* invert to dark glass — text contrasts brightly against it */
-  /* pause breathing while hovered */
   animation-play-state: running, paused;
   background:
     linear-gradient(135deg,
@@ -254,15 +297,16 @@ body {
       rgba(0,0,0,0.80) 100%);
   color: #ffffff;
   border-color: rgba(255,255,255,0.85);
-  letter-spacing: 0.4em;
-  text-shadow: 0 0 16px rgba(255,255,255,0.55);
+  letter-spacing: 0.42em;
+  text-shadow: 0 0 18px rgba(255,255,255,0.55);
+  transform: translate(-50%, -50%) scale(1.04);
   box-shadow:
-    0 10px 40px rgba(0,0,0,0.55),
-    0 0 30px rgba(255,255,255,0.20),
+    0 14px 48px rgba(0,0,0,0.55),
+    0 0 36px rgba(255,255,255,0.12),
     inset 0 1px 1px rgba(255,255,255,0.35),
     inset 0 -1px 1px rgba(255,255,255,0.10);
 }
-.cta:hover::before { background-position: -120% 0; }
+.cta:hover::before { animation-play-state: paused; opacity: 0.4; }
 
 /* ---------------------------------------------------------
    MINIMAL AUDIO PLAYER (sits just above the footer)
@@ -286,8 +330,9 @@ body {
   cursor: pointer;
   transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.6s ease;
   -webkit-tap-highlight-color: transparent;
-  opacity: 0;                       /* fades in with the scene */
-  animation: fadeIn 2.6s ease 0.6s forwards;
+  touch-action: manipulation;
+  opacity: 0;
+  animation: fadeIn 2s ease 2.2s forwards;
 }
 .player:hover {
   background: rgba(0,0,0,0.55);
@@ -295,12 +340,10 @@ body {
   transform: scale(1.06);
 }
 .player svg { width: 16px; height: 16px; display: block; }
-/* show play OR pause icon based on state */
 .player .icon-pause { display: none; }
 .player.playing .icon-play  { display: none; }
 .player.playing .icon-pause { display: block; }
 
-/* gentle pulsing ring while music plays */
 .player.playing::after {
   content: "";
   position: absolute;
@@ -316,7 +359,7 @@ body {
 }
 
 /* ---------------------------------------------------------
-   FOOTER
+   FOOTER (glass treatment matching the navbar)
    --------------------------------------------------------- */
 .footer {
   position: fixed;
@@ -330,15 +373,43 @@ body {
   gap: 16px;
   padding: 14px clamp(16px, 4vw, 34px);
   padding-bottom: calc(14px + env(safe-area-inset-bottom));
-  background: #000;
-  border-top: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.50);
+  backdrop-filter: blur(8px) saturate(130%);
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  opacity: 0;
+  animation: footerIn 2s ease 1.8s forwards;
+}
+.footer::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,0.25),
+    rgba(180,200,255,0.35),
+    rgba(255,255,255,0.25),
+    transparent);
+  background-size: 200% 100%;
+  animation: gradientLine 6s ease infinite;
+}
+@keyframes gradientLine {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+@keyframes footerIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .footer__brand {
   font-size: clamp(11px, 2.4vw, 14px);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 300;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.7);
   white-space: nowrap;
 }
 .footer__social {
@@ -348,12 +419,13 @@ body {
 }
 .footer__social a {
   display: flex;
-  color: rgba(255,255,255,0.75);
-  transition: color 0.3s ease, transform 0.3s ease;
+  color: rgba(255,255,255,0.65);
+  transition: color 0.3s ease, transform 0.3s ease, filter 0.3s ease;
 }
 .footer__social a:hover {
   color: #fff;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.35));
 }
 .footer__social svg { width: 21px; height: 21px; display: block; }
 
@@ -367,54 +439,115 @@ body {
   height: 100%;
   z-index: 100;
   pointer-events: none;
-  opacity: 0.45;                 /* subtle */
-  mix-blend-mode: overlay;       /* filmic: adds texture, not a gray wash */
-  will-change: contents;         /* hint compositor: repaints often */
+  opacity: 0.45;
+  mix-blend-mode: overlay;
+  will-change: contents;
 }
 
 /* ---------------------------------------------------------
    MOBILE
    --------------------------------------------------------- */
+
+@supports (height: 100dvh) {
+  .stage { height: 100dvh; }
+}
+
 @media (max-width: 600px) {
   .navbar {
     padding: 14px 16px;
     padding-top: calc(16px + env(safe-area-inset-top));
   }
-  /* keep the glass effect available on tap-less screens too */
   .navbar:active { backdrop-filter: blur(14px) saturate(160%);
                    -webkit-backdrop-filter: blur(14px) saturate(160%); }
 
+  .navbar__logo {
+    height: clamp(34px, 10vw, 48px);
+  }
+
   .cta {
-    padding: 14px 24px;
-    letter-spacing: 0.24em;
+    padding: 16px 28px;
+    letter-spacing: 0.22em;
+    font-size: clamp(13px, 3.6vw, 16px);
     max-width: 88vw;
     text-align: center;
-    white-space: normal;       /* allow wrap on very narrow phones */
+    white-space: normal;
+    border-radius: 14px;
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  .cta:hover { letter-spacing: 0.3em; }
+  .cta:hover { letter-spacing: 0.28em; }
 
   .footer {
     padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
     gap: 12px;
   }
   .footer__brand {
     letter-spacing: 0.14em;
     font-size: 11px;
   }
-  .footer__social { gap: 18px; }
-  .footer__social svg { width: 22px; height: 22px; }  /* comfy tap target */
+  .footer__social { gap: 20px; }
+  .footer__social a {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .footer__social svg { width: 22px; height: 22px; }
 
-  /* lift the audio button clear of the footer */
   .player {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     bottom: calc(58px + max(14px, env(safe-area-inset-bottom)));
     right: max(14px, env(safe-area-inset-right));
   }
+  .player svg { width: 18px; height: 18px; }
 }
 
-/* On touch screens (no hover), give the footer icons a clear
-   pressed state since :hover never fires. */
+/* Very small phones (iPhone SE, Galaxy A series) */
+@media (max-width: 375px) {
+  .cta {
+    padding: 14px 20px;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    max-width: 92vw;
+  }
+  .cta:hover { letter-spacing: 0.22em; }
+
+  .footer__brand { font-size: 10px; letter-spacing: 0.1em; }
+  .footer__social { gap: 16px; }
+  .navbar__logo { height: 32px; }
+}
+
+/* Landscape phones */
+@media (max-height: 500px) and (orientation: landscape) {
+  .cta {
+    padding: 10px 24px;
+    font-size: 13px;
+  }
+  .navbar { padding: 8px 16px; }
+  .navbar__logo { height: 30px; }
+  .footer { padding: 8px 16px; }
+  .player {
+    width: 38px;
+    height: 38px;
+    bottom: calc(44px + max(8px, env(safe-area-inset-bottom)));
+  }
+}
+
+/* Tablets */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .cta {
+    padding: 18px 36px;
+    font-size: 16px;
+  }
+  .footer__social svg { width: 22px; height: 22px; }
+}
+
+/* Touch screens — pressed states */
 @media (hover: none) {
   .footer__social a:active { color: #fff; transform: translateY(-2px); }
   .cta:active {
@@ -425,6 +558,13 @@ body {
         rgba(0,0,0,0.80) 100%);
     color: #fff;
     border-color: rgba(255,255,255,0.85);
+    letter-spacing: 0.3em;
+    text-shadow: 0 0 16px rgba(255,255,255,0.55);
+  }
+  .player:active {
+    background: rgba(0,0,0,0.55);
+    border-color: rgba(255,255,255,0.4);
+    transform: scale(1.06);
   }
 }
 
@@ -432,21 +572,24 @@ body {
    ACCESSIBILITY
    --------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  .frame, .cta, .player { animation: none; transition: none; }
+  .frame, .cta, .player, .footer, .navbar__logo { animation: none; transition: none; }
   .hero { animation: none; }
-  .cta, .player { opacity: 1; }
+  .cta, .player, .footer, .navbar__logo { opacity: 1; }
+  .cta::before, .cta::after { animation: none; }
   .player.playing::after { animation: none; }
+  .intro-curtain { animation: none; opacity: 0; visibility: hidden; }
+  .footer::before { animation: none; }
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   .cta {
     background:
       linear-gradient(135deg,
-        rgba(255,255,255,0.18) 0%,
-        rgba(255,255,255,0.05) 40%,
+        rgba(255,255,255,0.14) 0%,
+        rgba(255,255,255,0.04) 40%,
         rgba(255,255,255,0.02) 60%,
         rgba(255,255,255,0.10) 100%);
-    backdrop-filter: blur(14px) saturate(160%);
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(170%);
+    -webkit-backdrop-filter: blur(16px) saturate(170%);
   }
 }

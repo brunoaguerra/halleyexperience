@@ -2,6 +2,12 @@
    HALLEY — Looping soundtrack + play/pause control
    ========================================================= */
 
+// Remove intro curtain after it fades out
+const curtain = document.getElementById('introCurtain');
+if (curtain) {
+  curtain.addEventListener('animationend', () => curtain.remove(), { once: true });
+}
+
 const track  = document.getElementById('track');
 const player = document.getElementById('player');
 
